@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Page</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <form id="login-form" method="POST" action="/login">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <div class="oauth-login">
+            <p>Or login with:</p>
+            <a href="https://api.intra.42.fr/oauth/authorize?client_id=u-s4t2ud-d62101003cbcfecc1bcfd8c2cb987c883fa43d1b9090fef32917065449a9f597&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fcallback&response_type=code">Intra42</a>
+        </div>
+    </div>
+</body>
+
+</html>
