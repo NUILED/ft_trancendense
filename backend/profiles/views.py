@@ -9,6 +9,7 @@ from django.conf import settings
 import requests
 import json
 
+
 class Sign_upView(APIView):
     def post(self,request):
         serialaizer = UserSerializer(data=request.data)
@@ -29,29 +30,34 @@ class LoginView(APIView):
         if not user.check_password(raw_password=password):
             raise AuthenticationFailed('User not Found or password incorrect')
         payload = {
-            'id' : user.email
+            'email' : user.email
         }
-        token = jwt.encode(payload,settings.SECRET_KEY,algorithm='HS256')
+        token = jwt.encode(payload ,settings.SECRET_KEY ,algorithm='HS256')
         res = Response()
-        res.set_cookie(key='access_token', value=token, httponly=True)
+        res.set_cookie(key='Token', value=token, httponly=True)
         res.data = {
-            'access_token': token
+            'Token': token
         }
         return res
 
-class GetToken(APIView):
+class Valid_Token(APIView):
     def get(self,request):
         try:
-            token = request.COOKIES.get('access_token')
+            token = request.COOKIES.get('Token')
+            print
             payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
         except:
             raise AuthenticationFailed('Token is not Valid')
-        user = User_profile.objects.filter(email=payload['email']).first()
-        if not user:
-            raise AuthenticationFailed('Token is not Valid')
-        serialaizer = UserSerializer(user)
+        try:
+            user = User_profile.objects.filter(email=payload['email']).first()
+            if user:
+                serialaizer = UserSerializer(user)
+            else:
+                raise AuthenticationFailed('Error')
+        except:
+            raise AuthenticationFailed('User Not FOund')
         res = Response()
-        res.set_cookie(key='access_token', value=token, httponly=True)
+        res.set_cookie(key='Token', value=token, httponly=True)
         res.data = {
             'messege': serialaizer.data
         }
@@ -82,9 +88,9 @@ class CallBack(APIView):
                 serialaizer = UserSerializer(data=user)
                 serialaizer.is_valid(raise_exception=False)
                 serialaizer.save()
-                payload = {'id' : serialaizer.data['email']}
+                payload = {'Token' : serialaizer.data['email']}
             else:
-                payload = {'id' : user.email}
+                payload = {'email' : user.email}
             r_token = jwt.encode(payload,settings.SECRET_KEY,algorithm='HS256')
             res = Response()
             res.set_cookie(key='access_token', value=r_token, httponly=True)
@@ -111,10 +117,49 @@ class CallBack(APIView):
         response = requests.get(api_url, headers=data)
         return response.json()
 
-class Get_user_info(APIView):
-    def get():
-        pass
+class Update_user_info(APIView):
+    def put(self,request):
+        try:
+            infos = request.data
+            email = infos['email']
+            user = User_profile.objects.filter(email=email).first()
+            if user:
+                user.id = infos['id']  # Set the user's ID directly
+                user.email = infos['email']
+                user.first_name = infos['first_name']
+                user.last_name = infos['last_name']
+                user.avatar = infos['avatar']
+                user.bio = infos['bio']
+                user.save()  # Save the updated user profile
+                return Response({"success"})
+            else:
+                return Response({"user dose not exsiste"})
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
 
 class Get_user_info(APIView):
-    def get():
-        pass
+    def get(self,request):
+        try:
+            email = request.data['email']
+            user = User_profile.objects.filter(email=email).first()
+            if user:
+                serialaizer = UserSerializer(user)
+                return Response({'info':serialaizer.data})
+            else:
+                return Response({'info':'user not found'})
+        except:
+            return Response({'info':'user not found'})
+
+class Delete_user(APIView):
+    def delete(self,request):
+        try:
+            email = request.data['email']
+            user = User_profile.objects.filter(email=email).first()
+            if user:
+                user.delete()
+                return Response({'info':'Deleted'})
+            else:
+                return Response({'info':'user not found'})
+        except:
+            return Response({'info':'user not found'})
+
