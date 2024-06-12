@@ -87,6 +87,14 @@ DATABASES = {
     }
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'outifrakhamine@gmail.com'
+EMAIL_HOST_PASSWORD = 'hbhywpwjwtoarxtd'
+EMAIL_USE_TLS = True
+EMAIL_DEBUG = True
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -124,6 +132,11 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # This is where collected static files will be stored
+STATIC_DIRS = [
+    os.path.join(BASE_DIR,'build/static')
+]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -134,8 +147,8 @@ API_URL_INFO = 'https://api.intra.42.fr/v2/me'
 API_URL = 'https://api.intra.42.fr/oauth/token'
 
 # Define your API credentials
-CLIENT_ID = 'u-s4t2ud-6ebb81ea63f67ae35515dc056bb2bb0a57d41b4858df0a802b3537d4f7074dc7'
-CLIENT_SECRET = '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'
+CLIENT_ID = 'u-s4t2ud-b7a07e95a71b24423b13ff59e31449be4182b63b7aaf9bc87dcd54d2be5e83ec'
+CLIENT_SECRET = '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'
 
 
 code = ''
@@ -146,12 +159,5 @@ DATA = {
     'client_id': CLIENT_ID,
     'client_secret': CLIENT_SECRET,
     'code': code,
-    'redirect_uri': 'http://127.0.0.1:8080/api/callback'
+    'redirect_uri': 'http://127.0.0.1:8000/api/callback'
 }
-
-
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # This is where collected static files will be stored
-
-# Media files (Uploaded files)
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media') 

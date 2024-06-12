@@ -8,15 +8,48 @@ from django.core.serializers import deserialize
 from django.conf import settings
 import requests
 import json
+from django.core.mail import send_mail
 
 
 class Sign_upView(APIView):
     def post(self,request):
         serialaizer = UserSerializer(data=request.data)
-        serialaizer.is_valid(raise_exception=True)
-        serialaizer.save()
-        return Response(serialaizer.data)
+        try:
+            if serialaizer.is_valid(raise_exception=True):
+                user = serialaizer.save()
+                self.send_confirmation_email(user)#fix responce here somthing happend
+                return Response({'detail': 'Registration successful. Please confirm your email.'})
+        except Exception as e:
+            print(e)
+            return Response({"user with this email already exists."})
 
+    def send_confirmation_email(self,user):
+        try:
+            id = user.id
+            payload = {'id': id}
+            token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+            activation_link = f"http://localhost:8000/api/activate/?token={token}"
+            mail_subject = "Account Activation"
+            message = f"Please click the following link to activate your account: {activation_link}"
+            send_mail(mail_subject, message, 'info@google.com', [user.email])
+        except Exception as e:
+            print(e)
+
+class Activate(APIView):
+    def get(self,request):
+        token = request.GET.get('token')
+        payload = {'id':token}
+        id = jwt.decode(token, settings.SECRET_KEY, algorithms='HS256')
+        user_id = id['id']
+        user = User_profile.objects.filter(id=user_id).first()
+        if user.is_valid == True:
+            return Response({'detail': 'confirmatration allready done'})
+        elif user:
+            user.is_valid = True
+            user.save()
+            return Response({'detail': 'confirmatration successful '})
+        return Response({'detail': 'confirmatration unsuccessful'})
+            
 class LoginView(APIView):
     def post(self,request):
         try:
@@ -44,7 +77,6 @@ class Valid_Token(APIView):
     def get(self,request):
         try:
             token = request.COOKIES.get('Token')
-            print
             payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
         except:
             raise AuthenticationFailed('Token is not Valid')
@@ -77,6 +109,8 @@ class CallBack(APIView):
             return Response({'messege':"too many calls"})
         if email:
             user = User_profile.objects.filter(email=email).first()
+            if user:
+                return Response({'messege':"all ready veryfied"})
             if not user:
                 user = {
                     'email': info['email'],
@@ -115,6 +149,7 @@ class CallBack(APIView):
         }
         data = DATA_HEADER
         response = requests.get(api_url, headers=data)
+        print(response.json())
         return response.json()
 
 class Update_user_info(APIView):
@@ -122,8 +157,11 @@ class Update_user_info(APIView):
         try:
             infos = request.data
             email = infos['email']
+            password = infos['password']
             user = User_profile.objects.filter(email=email).first()
-            if user:
+            if not user.check_password(raw_password=password):
+                raise AuthenticationFailed('User not Found or password incorrect')
+            elif user:
                 user.id = infos['id']  # Set the user's ID directly
                 user.email = infos['email']
                 user.first_name = infos['first_name']

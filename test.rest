@@ -1,0 +1,29 @@
+
+
+# GET  http://localhost:8000/api/activate/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MX0.sU30l9m_tmqh_HzL9lvvy7nv7g-9Q18sxtRwMMslpQA
+# Content-Type: application/json
+# {}
+
+POST http://127.0.0.1:8000/api/signup
+Content-Type: application/json
+
+{
+    "first_name":"flirsts_name",
+    "last_name":"firsmt_sname",
+    "email":"sifi6027@gmail.com",
+    "password":"aoutifra"
+}
+
+
+
+### Sign Up Request
+# GET   https://api.intra.42.fr/v2/me
+###
+GET http://127.0.0.1:8000/api/v_token
+Content-Type: application/json
+Authorization: Token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFvdXRpZnJhQHN0dWRlbnQuMTMzNy5tYSJ9.LqSR4JJXirsn-aJKuOwwu5AbbaGW3Z_BeSN1jEh8c4Q
+# Authorization: Bearer {{}}, Bearer {{eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE3ODIzNzM0LCJpYXQiOjE3MTc4MjM0MzQsImp0aSI6IjIzY2M4Zjg1ZWQzZDQxMGY5YzNlNzllNjYxMGM0YWI4IiwidXNlcl9pZCI6MTl9.BT9FTaJT8vCe42fx8gQxAAnL05LhF4kD5SECNGtP0E4}}
+
+{
+
+}
