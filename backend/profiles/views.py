@@ -1,4 +1,5 @@
 from rest_framework.views import APIView
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
 from .serializer import UserSerializer , LoginUserSerializer
@@ -12,12 +13,11 @@ from django.core.mail import send_mail
 
 
 class LoginView(APIView):
-    def post(self,request):
-        loginserializer = LoginUserSerializer(data=request.data, context={'context':request})
+    def post(self, request):
+        loginserializer = LoginUserSerializer(data=request.data, context={'context': request})
         if loginserializer.is_valid(raise_exception=True):
-            return Response(loginserializer.data)
-        return Response({"user with this email already exists."})
-            
+            return Response(loginserializer.data, status=status.HTTP_200_OK)
+        return Response({"detail": "User with this email already exists."}, status=status.HTTP_400_BAD_REQUEST)
 
 class Sign_upView(APIView):
     def post(self,request):
@@ -26,10 +26,16 @@ class Sign_upView(APIView):
             if serialaizer.is_valid(raise_exception=True):
                 user = serialaizer.save()
                 self.send_confirmation_email(user)#fix responce here somthing happend
-                return Response({'detail': 'Registration successful. Please confirm your email.'})
+                return Response(
+                    {'detail': 'Registration successful. Please confirm your email.'},
+                    status=status.HTTP_201_CREATED
+                )
         except Exception as e:
             print(e)
-            return Response({"user with this email already exists."})
+            return Response(
+                {"detail": "User with this email already exists."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
     def send_confirmation_email(self,user):
         try:
@@ -39,9 +45,9 @@ class Sign_upView(APIView):
             activation_link = f"http://localhost:8000/api/activate/?token={token}"
             mail_subject = "Account Activation"
             message = f"Please click the following link to activate your account: {activation_link}"
-            send_mail(mail_subject, message, 'info@google.com', [user.email])
+            send_mail(mail_subject, message, 'info@ft_trancendense.com', [user.email])
         except Exception as e:
-            print(e)
+            pass
 
 class Activate(APIView):
     def get(self,request):
@@ -57,51 +63,6 @@ class Activate(APIView):
             user.save()
             return Response({'detail': 'confirmatration successful '})
         return Response({'detail': 'confirmatration unsuccessful'})
-            
-# class LoginView(APIView):
-#     def post(self,request):
-#         try:
-#             email = request.data['email']
-#             password = request.data['password']
-#         except:
-#             raise AuthenticationFailed('User not Found or password incorrect')
-#         user = User_profile.objects.filter(email=email).first()
-#         if user is None:
-#             raise AuthenticationFailed('User not Found or password incorrect')
-#         if not user.check_password(raw_password=password):
-#             raise AuthenticationFailed('User not Found or password incorrect')
-#         payload = {
-#             'email' : user.email
-#         }
-#         token = jwt.encode(payload ,settings.SECRET_KEY ,algorithm='HS256')
-#         res = Response()
-#         res.set_cookie(key='Token', value=token, httponly=True)
-#         res.data = {
-#             'Token': token
-#         }
-#         return res
-
-class Valid_Token(APIView):
-    def get(self,request):
-        try:
-            token = request.COOKIES.get('Token')
-            payload = jwt.decode(token,settings.SECRET_KEY,algorithms='HS256')
-        except:
-            raise AuthenticationFailed('Token is not Valid')
-        try:
-            user = User_profile.objects.filter(email=payload['email']).first()
-            if user:
-                serialaizer = UserSerializer(user)
-            else:
-                raise AuthenticationFailed('Error')
-        except:
-            raise AuthenticationFailed('User Not FOund')
-        res = Response()
-        res.set_cookie(key='Token', value=token, httponly=True)
-        res.data = {
-            'messege': serialaizer.data
-        }
-        return res
 
 class CallBack(APIView):
     def get(self,request):
@@ -118,7 +79,13 @@ class CallBack(APIView):
         if email:
             user = User_profile.objects.filter(email=email).first()
             if user:
-                return Response({'messege':"all ready veryfied"})
+                token = user.token()
+                return Response ({
+                    'email': user.email,
+                    'first_name':user.first_name,
+                    'access': str(token.access_token),
+                    'refresh': str(token),
+                })
             if not user:
                 user = {
                     'email': info['email'],
@@ -130,16 +97,17 @@ class CallBack(APIView):
                 serialaizer = UserSerializer(data=user)
                 serialaizer.is_valid(raise_exception=False)
                 serialaizer.save()
-                payload = {'Token' : serialaizer.data['email']}
-            else:
-                payload = {'email' : user.email}
-            r_token = jwt.encode(payload,settings.SECRET_KEY,algorithm='HS256')
-            res = Response()
-            res.set_cookie(key='access_token', value=r_token, httponly=True)
-            res.data = {
-            'access_token': r_token
-            }
-            return res
+                user = User_profile.objects.filter(email=email).first()
+                user.is_active = True
+                user.save()
+                if user:
+                    token = user.token()
+                    return {
+                        'email': user.email,
+                        'first_name':user.first_name,
+                        'access': str(token.access_token),
+                        'refresh': str(token),
+                    }
         else:
             return Response({"error"})
 
@@ -157,7 +125,6 @@ class CallBack(APIView):
         }
         data = DATA_HEADER
         response = requests.get(api_url, headers=data)
-        print(response.json())
         return response.json()
 
 class Update_user_info(APIView):
@@ -168,15 +135,14 @@ class Update_user_info(APIView):
             password = infos['password']
             user = User_profile.objects.filter(email=email).first()
             if not user.check_password(raw_password=password):
-                raise AuthenticationFailed('User not Found or password incorrect')
+                raise AuthenticationFailed('invalid credential')
             elif user:
-                user.id = infos['id']  # Set the user's ID directly
                 user.email = infos['email']
                 user.first_name = infos['first_name']
                 user.last_name = infos['last_name']
                 user.avatar = infos['avatar']
                 user.bio = infos['bio']
-                user.save()  # Save the updated user profile
+                user.save()
                 return Response({"success"})
             else:
                 return Response({"user dose not exsiste"})

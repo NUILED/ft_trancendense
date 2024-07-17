@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -158,7 +159,7 @@ API_URL = 'https://api.intra.42.fr/oauth/token'
 
 # Define your API credentials
 CLIENT_ID = 'u-s4t2ud-b7a07e95a71b24423b13ff59e31449be4182b63b7aaf9bc87dcd54d2be5e83ec'
-CLIENT_SECRET = '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'
+CLIENT_SECRET = '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'
 
 
 code = ''
@@ -170,4 +171,13 @@ DATA = {
     'client_secret': CLIENT_SECRET,
     'code': code,
     'redirect_uri': 'http://127.0.0.1:8000/api/callback'
+}
+
+
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
 }

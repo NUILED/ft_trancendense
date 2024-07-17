@@ -25,29 +25,26 @@ class LoginUserSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(max_length=255)
     email = serializers.EmailField(max_length=255)
     password = serializers.CharField(max_length=255,write_only=True)
-    access = serializers.CharField(max_length=255)
-    # refresh = serializers.CharField(max_length=255)
+    access = serializers.CharField(max_length=255,read_only=True)
+    refresh = serializers.CharField(max_length=255,read_only=True)
     class Meta:
         model = User_profile
-        fields = ['email','password','first_name','access']
-
+        fields = ['email','password','first_name','access','refresh']
 
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
-        user = User_profile.objects.get(email=email)
-        if not user:
+        try:
+            user = User_profile.objects.get(email=email)
+        except:
             raise AuthenticationFailed("invalid credentials try again")
         if not user.check_password(raw_password=password):
             raise AuthenticationFailed('User not Found or password incorrect')
         token = user.token()
-
         return {
             'email': user.email,
             'first_name':user.first_name,
             'access': str(token.access_token),
             'refresh': str(token),
         }
-        
-
 

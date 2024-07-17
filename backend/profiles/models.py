@@ -12,15 +12,9 @@ class User_profile(AbstractBaseUser):
     password = models.CharField(max_length=255)
     is_valid = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
-    username = None
-    
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['password']
-
-
-    groups = models.ManyToManyField(Group, related_name='user_profiles')
-    user_permissions = models.ManyToManyField(Permission, related_name='user_profiles')
-
     
     def token(self):
         refresh = RefreshToken.for_user(self)
