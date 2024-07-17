@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
-from .serializer import UserSerializer
+from .serializer import UserSerializer , LoginUserSerializer
 from .models import User_profile
 import jwt 
 from django.core.serializers import deserialize
@@ -10,6 +10,14 @@ import requests
 import json
 from django.core.mail import send_mail
 
+
+class LoginView(APIView):
+    def post(self,request):
+        loginserializer = LoginUserSerializer(data=request.data, context={'context':request})
+        if loginserializer.is_valid(raise_exception=True):
+            return Response(loginserializer.data)
+        return Response({"user with this email already exists."})
+            
 
 class Sign_upView(APIView):
     def post(self,request):
@@ -50,28 +58,28 @@ class Activate(APIView):
             return Response({'detail': 'confirmatration successful '})
         return Response({'detail': 'confirmatration unsuccessful'})
             
-class LoginView(APIView):
-    def post(self,request):
-        try:
-            email = request.data['email']
-            password = request.data['password']
-        except:
-            raise AuthenticationFailed('User not Found or password incorrect')
-        user = User_profile.objects.filter(email=email).first()
-        if user is None:
-            raise AuthenticationFailed('User not Found or password incorrect')
-        if not user.check_password(raw_password=password):
-            raise AuthenticationFailed('User not Found or password incorrect')
-        payload = {
-            'email' : user.email
-        }
-        token = jwt.encode(payload ,settings.SECRET_KEY ,algorithm='HS256')
-        res = Response()
-        res.set_cookie(key='Token', value=token, httponly=True)
-        res.data = {
-            'Token': token
-        }
-        return res
+# class LoginView(APIView):
+#     def post(self,request):
+#         try:
+#             email = request.data['email']
+#             password = request.data['password']
+#         except:
+#             raise AuthenticationFailed('User not Found or password incorrect')
+#         user = User_profile.objects.filter(email=email).first()
+#         if user is None:
+#             raise AuthenticationFailed('User not Found or password incorrect')
+#         if not user.check_password(raw_password=password):
+#             raise AuthenticationFailed('User not Found or password incorrect')
+#         payload = {
+#             'email' : user.email
+#         }
+#         token = jwt.encode(payload ,settings.SECRET_KEY ,algorithm='HS256')
+#         res = Response()
+#         res.set_cookie(key='Token', value=token, httponly=True)
+#         res.data = {
+#             'Token': token
+#         }
+#         return res
 
 class Valid_Token(APIView):
     def get(self,request):

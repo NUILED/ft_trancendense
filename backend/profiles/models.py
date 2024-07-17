@@ -1,8 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser,Group, Permission
+from django.contrib.auth.models import AbstractBaseUser,Group, Permission
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
-class User_profile(AbstractUser):
+class User_profile(AbstractBaseUser):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     email = models.EmailField(max_length=255,unique=True)
@@ -10,13 +11,21 @@ class User_profile(AbstractUser):
     bio = models.CharField(max_length=300,default="write somthing nice here")
     password = models.CharField(max_length=255)
     is_valid = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    username = None
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['password']
 
-    username = None 
 
-    REQUIRED_FIELDS = ['email','password']
     groups = models.ManyToManyField(Group, related_name='user_profiles')
     user_permissions = models.ManyToManyField(Permission, related_name='user_profiles')
 
+    
+    def token(self):
+        refresh = RefreshToken.for_user(self)
+        return refresh
+    
     def __str__(self):
         return f'{self.first_name} {self.last_name} ({self.email})'
     
@@ -31,3 +40,4 @@ class User_profile(AbstractUser):
         if self.id == id:
             return self
         return False
+    
