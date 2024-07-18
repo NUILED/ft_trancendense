@@ -98,7 +98,7 @@ DATABASES = {
 
 AUTH_USER_MODEL = 'profiles.User_profile'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
 EMAIL_HOST_USER = 'c989bb4787ce9b'
 EMAIL_HOST_PASSWORD = 'c69dce74278db4'

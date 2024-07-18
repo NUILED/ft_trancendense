@@ -28,7 +28,7 @@ class Sign_upView(APIView):
         try:
             if serialaizer.is_valid(raise_exception=True):
                 user = serialaizer.save()
-                self.send_confirmation_email(user)
+                # self.send_confirmation_email(user)
                 return Response(
                     {'detail': 'Registration successful. Please confirm your email.'},
                     status=status.HTTP_201_CREATED

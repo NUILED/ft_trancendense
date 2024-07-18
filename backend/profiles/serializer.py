@@ -9,14 +9,25 @@ class User_Register(serializers.ModelSerializer):
 
     class Meta:
         model = User_profile
-        fields = ['email','password','password1','first_name','last_name','bio']
+        fields = ['email','password','password1','first_name','last_name']
 
     def valideate(self,attrs):
-        return super().validate(attrs)
+        password = attrs.get('password','')
+        password1 = attrs.get('password1','')
+        if password != password1:
+            raise serializers.ValidationError('password dose not match')
+        return attrs
 
+    def create(self,validated_data):
+        try:
+            validated_data.pop('password1')
+            user = User_profile.objects.create_user(**validated_data)
+            print(user)
+            user.save()
+        except Exception as e:
+            print(e , ' ssss')
 
-    def create(self,attrs):
-        return super().validate(attrs)
+        return user
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -50,7 +61,7 @@ class LoginUserSerializer(serializers.ModelSerializer):
         email = attrs.get('email')
         password = attrs.get('password')
         try:
-            user = User_profile.objects.get(email=email)
+            user = User_profile.objects.get(email=email) #check password
         except:
             raise AuthenticationFailed("invalid credentials try again")
         if not user.is_active:
