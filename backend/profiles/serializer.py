@@ -3,6 +3,21 @@ from .models import User_profile
 from django.contrib.auth import authenticate
 from rest_framework.exceptions import AuthenticationFailed
 
+class User_Register(serializers.ModelSerializer):
+    password = serializers.CharField(max_length=68,min_length=6,write_only=True)
+    password1 = serializers.CharField(max_length=68,min_length=6,write_only=True)
+
+    class Meta:
+        model = User_profile
+        fields = ['email','password','password1','first_name','last_name','bio']
+
+    def valideate(self,attrs):
+        return super().validate(attrs)
+
+
+    def create(self,attrs):
+        return super().validate(attrs)
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -38,6 +53,8 @@ class LoginUserSerializer(serializers.ModelSerializer):
             user = User_profile.objects.get(email=email)
         except:
             raise AuthenticationFailed("invalid credentials try again")
+        if not user.is_active:
+            raise AuthenticationFailed('User not Found or password incorrect')
         if not user.check_password(raw_password=password):
             raise AuthenticationFailed('User not Found or password incorrect')
         token = user.token()
@@ -48,3 +65,8 @@ class LoginUserSerializer(serializers.ModelSerializer):
             'refresh': str(token),
         }
 
+
+
+class ResetPassword(serializers.ModelSerializer):
+    pass
+             

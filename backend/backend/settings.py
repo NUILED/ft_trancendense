@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'rest_framework.authtoken',
     'profiles',
 ]
@@ -97,14 +98,13 @@ DATABASES = {
 
 AUTH_USER_MODEL = 'profiles.User_profile'
 
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'outifrakhamine@gmail.com'
-EMAIL_HOST_PASSWORD = 'hbhywpwjwtoarxtd'
+EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
+EMAIL_HOST_USER = 'c989bb4787ce9b'
+EMAIL_HOST_PASSWORD = 'c69dce74278db4'
+EMAIL_PORT = '2525'
 EMAIL_USE_TLS = True
-EMAIL_DEBUG = True
+
 
 
 # Password validation
@@ -176,6 +176,8 @@ DATA = {
 
 
 SIMPLE_JWT = {
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_BLACKLIST': 'rest_framework_simplejwt.token_blacklist.models.Blacklist',
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": True,
