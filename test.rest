@@ -4,14 +4,16 @@
 # Content-Type: application/json
 # {}
 
-POST http://127.0.0.1:8000/api/login
+
+POST http://127.0.0.1:8000/api/signup
 Content-Type: application/json
 
 {
     "first_name":"flirsts_name",
     "last_name":"firsmt_sname",
-    "email":"sifi6027@gmail.com",
-    "password":"aoutifra"
+    "email":"sifssis6027ss@gmail.com",
+    "password":"aoutifra",
+    "password1":"aoutifra"
 }
 
 

@@ -9,7 +9,7 @@ class User_Register(serializers.ModelSerializer):
 
     class Meta:
         model = User_profile
-        fields = ['email','password','password1','first_name','last_name']
+        fields = ['email','first_name','last_name' ,'password','password1']
 
     def valideate(self,attrs):
         password = attrs.get('password','')
@@ -21,9 +21,9 @@ class User_Register(serializers.ModelSerializer):
     def create(self,validated_data):
         try:
             validated_data.pop('password1')
+            print(validated_data)
             user = User_profile.objects.create_user(**validated_data)
             print(user)
-            user.save()
         except Exception as e:
             print(e , ' ssss')
 
