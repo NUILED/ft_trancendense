@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
-from .serializer import UserSerializer , LoginUserSerializer ,User_Register
+from .serializer import UserSerializer , LoginUserSerializer ,User_Register ,RestSerializer
 from .models import User_profile
 import jwt 
 from django.core.serializers import deserialize
@@ -192,6 +192,15 @@ class Delete_user(APIView):
         except:
             return Response({'info':'user not found'})
 
+class ResetPasswordView(APIView):
+    def post(self,request):
+        try:
+            resetserializer = RestSerializer(data=request.data)
+            if resetserializer.is_valid(raise_exception=True):
+                return Response({"detail": "email has been send to reset password"}, status=status.HTTP_200_OK)
+            return Response({"detail": "Authorization header missing or invalid."}, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({"detail": "Authorization header missing or invalid."}, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -207,3 +216,7 @@ class LogoutView(APIView):
                 return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"detail": "Authorization header missing or invalid."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SetPasswordView(APIView):    
+    pass #for decode token

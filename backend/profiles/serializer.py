@@ -1,6 +1,7 @@
 from rest_framework import serializers 
 from .models import User_profile
 from django.contrib.auth import authenticate
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from rest_framework.exceptions import AuthenticationFailed
 
 class User_Register(serializers.ModelSerializer):
@@ -78,6 +79,54 @@ class LoginUserSerializer(serializers.ModelSerializer):
 
 
 
-class ResetPassword(serializers.ModelSerializer):
-    pass
-             
+class RestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User_profile
+        fields = ['email']
+
+    def validate(self,attrs):
+        try:
+            attrs.get('email')
+            user = User_profile.objects.filter(email=email).first()
+            if not user:
+                raise AuthenticationFailed('User not Found or password incorrect')
+            self.send_confirmation_email(user)
+        except:
+            raise AuthenticationFailed('User not Found or password incorrect')
+
+    def send_confirmation_email(self,user):#work needs here
+        try:
+            id = user.id          
+            payload = {'id': id}
+            token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+            activation_link = f"http://localhost:8000/api/activate/?token={token}"
+            mail_subject = "Account Activation"
+            message = f"Please click the following link to activate your account: {activation_link}"
+            print(message)
+            send_mail(mail_subject, 'HI', 'sifi@gmail.com', [user.email])
+        except Exception as e:
+            pass    
+
+
+class SetPassword(serializers.ModelSerializer):
+    password = serializers.CharField(max_length=68,min_length=6,write_only=True)
+    password1 = serializers.CharField(max_length=68,min_length=6,write_only=True)
+    uid = serializers.CharField(max_length=68,min_length=6,write_only=True)
+
+    class Meta:
+        model = User_profile
+        fields = ['id' ,'password','password1']
+
+    def valideate(self,attrs):#try catsh needed
+        password = attrs.get('password','')
+        password1 = attrs.get('password1','')
+        uid = attrs.get('id')
+        if password != password1:
+            raise serializers.ValidationError('password dose not match')
+            user = User_profile.objects.filter(id=uid).first()
+            user.set_password(password)
+            user.save()
+            print(user)
+            return user
+        except Exception as e:
+            print(e , ' ssss')
