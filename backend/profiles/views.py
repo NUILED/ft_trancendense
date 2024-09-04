@@ -24,8 +24,8 @@ class LoginView(APIView):
 
 class Sign_upView(APIView):
     def post(self,request):
-        serialaizer = User_Register(data=request.data)
         try:
+            serialaizer = User_Register(data=request.data)
             if serialaizer.is_valid(raise_exception=True):
                 user = serialaizer.save()
                 # self.send_confirmation_email(user)
@@ -34,11 +34,24 @@ class Sign_upView(APIView):
                     status=status.HTTP_201_CREATED
                 )
         except Exception as e:
-            print(e)
-            return Response(
-                {"detail": "User with this email already exists."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            if 'email' in str(e):
+                return Response(
+                    {'detail': 'email already exists.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            elif 'password' in str(e):
+                return Response(
+                    {'detail': 'Passwords do not matches.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            else:
+                return Response(
+                    {'detail': 'Internal Error'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+
+
 
     def send_confirmation_email(self,user):
         try:
@@ -85,23 +98,18 @@ class CallBack(APIView):
         try:
             code = request.GET.get('code')
             token = self.get_access_token(code)
-        except Exception as e:
-            return Response({'messege':"invalid code"})
-        try:
             info = self.user_info(token)
             email = info['email']
-        except Exception as e:
-            return Response({'messege':"too many calls"})
-        if email:
-            user = User_profile.objects.filter(email=email).first()
-            if user:
-                token = user.token()
-                return Response ({
-                    'email': user.email,
-                    'first_name':user.first_name,
-                    'access': str(token.access_token),
-                    'refresh': str(token),
-                })
+            if email:
+                user = User_profile.objects.filter(email=email).first()
+                if user:
+                    token = user.token()
+                    return Response ({
+                        'email': user.email,
+                        'first_name':user.first_name,
+                        'access': str(token.access_token),
+                        'refresh': str(token),
+                    })
             if not user:
                 user = {
                     'email': info['email'],
@@ -116,16 +124,16 @@ class CallBack(APIView):
                 user = User_profile.objects.filter(email=email).first()
                 user.is_active = True
                 user.save()
-                if user:
-                    token = user.token()
-                    return {
-                        'email': user.email,
-                        'first_name':user.first_name,
-                        'access': str(token.access_token),
-                        'refresh': str(token),
-                    }
-        else:
-            return Response({"error"})
+            if user:
+                token = user.token()
+                return {
+                    'email': user.email,
+                    'first_name':user.first_name,
+                    'access': str(token.access_token),
+                    'refresh': str(token),
+                }
+        except :
+            return Response({'messege':"invalid code"})
 
     def get_access_token(self,code):
         api_url = settings.API_URL

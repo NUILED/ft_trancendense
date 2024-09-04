@@ -11,25 +11,16 @@ class User_Register(serializers.ModelSerializer):
     class Meta:
         model = User_profile
         fields = ['email','first_name','last_name' ,'password','password1']
-
-    def valideate(self,attrs):
+    def validate(self,attrs):
         password = attrs.get('password','')
-        password1 = attrs.get('password1','')
+        password1 = attrs.pop('password1','')
         if password != password1:
             raise serializers.ValidationError('password dose not match')
         return attrs
 
-    def create(self,validated_data):
-        try:
-            validated_data.pop('password1')
-            print(validated_data)
-            user = User_profile.objects.create_user(**validated_data)
-            print(user)
-        except Exception as e:
-            print(e , ' ssss')
-
+    def create(self, validated_data):
+        user = User_profile.objects.create_user(**validated_data)
         return user
-
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -49,14 +40,14 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class LoginUserSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField(max_length=255)
+    # first_name = serializers.CharField(max_length=255)
     email = serializers.EmailField(max_length=255)
     password = serializers.CharField(max_length=255,write_only=True)
     access = serializers.CharField(max_length=255,read_only=True)
     refresh = serializers.CharField(max_length=255,read_only=True)
     class Meta:
         model = User_profile
-        fields = ['email','password','first_name','access','refresh']
+        fields = ['email','password','access','refresh']
 
     def validate(self, attrs):
         email = attrs.get('email')
@@ -128,5 +119,5 @@ class SetPassword(serializers.ModelSerializer):
             user.save()
             print(user)
             return user
-        except Exception as e:
+        else:
             print(e , ' ssss')

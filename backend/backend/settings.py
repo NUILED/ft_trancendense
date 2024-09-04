@@ -159,7 +159,7 @@ API_URL = 'https://api.intra.42.fr/oauth/token'
 
 # Define your API credentials
 CLIENT_ID = 'u-s4t2ud-b7a07e95a71b24423b13ff59e31449be4182b63b7aaf9bc87dcd54d2be5e83ec'
-CLIENT_SECRET = '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'
+CLIENT_SECRET = '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'
 
 
 code = ''

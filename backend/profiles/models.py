@@ -6,10 +6,10 @@ from .manager import UserManager
 class User_profile(AbstractBaseUser,PermissionsMixin):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
-    email = models.EmailField(max_length=255,unique=True)
+    email = models.EmailField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
     avatar = models.CharField(max_length=255, default='img url')
-    bio = models.CharField(max_length=300,default="write somthing nice here")
+    bio = models.CharField(max_length=300, default="write somthing nice here")
     is_valid = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -26,6 +26,6 @@ class User_profile(AbstractBaseUser,PermissionsMixin):
         return refresh
     
     def __str__(self):
-        return f'{self.first_name} {self.last_name} ({self.email})'
+        return f'{self.first_name} {self.last_name} {self.email}'
     
     

@@ -1,31 +1,35 @@
+# # GET  http://localhost:8000/api/activate/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MX0.sU30l9m_tmqh_HzL9lvvy7nv7g-9Q18sxtRwMMslpQA
+# # Content-Type: application/json
+# # {}
 
 
-# GET  http://localhost:8000/api/activate/?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MX0.sU30l9m_tmqh_HzL9lvvy7nv7g-9Q18sxtRwMMslpQA
+# POST http://127.0.0.1:8000/api/signup
 # Content-Type: application/json
-# {}
+
+# {
+#     "first_name":"flirsts_name",
+#     "last_name":"firsmt_sname",
+#     "email":"yfo7dkle4414k448@amxyy.com",
+#     "password":"aoutifra1",
+#     "password1":"aoutiflra1"
+# }
 
 
-POST http://127.0.0.1:8000/api/signup
+
+POST https://api.intra.42.fr/oauth/token
 Content-Type: application/json
 
 {
-    "first_name":"flirsts_name",
-    "last_name":"firsmt_sname",
-    "email":"sifssis6027ss@gmail.com",
-    "password":"aoutifra",
-    "password1":"aoutifra"
+    "grant_type": "authorization_code",
+    "client_id": "u-s4t2ud-b7a07e95a71b24423b13ff59e31449be4182b63b7aaf9bc87dcd54d2be5e83ec",
+    "client_secret": "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",
+    "code": "09ea9d8d67a68a778dc4b49fad2d85be30020f2e0161a967ad8f1446cd2c2d22",
+    "redirect_uri": "http://127.0.0.1:8000/api/callback"
 }
-
 
 
 ### Sign Up Request
 # GET   https://api.intra.42.fr/v2/me
 ###
-GET http://127.0.0.1:8000/api/v_token
-Content-Type: application/json
-Authorization: Token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFvdXRpZnJhQHN0dWRlbnQuMTMzNy5tYSJ9.LqSR4JJXirsn-aJKuOwwu5AbbaGW3Z_BeSN1jEh8c4Q
-# Authorization: Bearer {{}}, Bearer {{eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzE3ODIzNzM0LCJpYXQiOjE3MTc4MjM0MzQsImp0aSI6IjIzY2M4Zjg1ZWQzZDQxMGY5YzNlNzllNjYxMGM0YWI4IiwidXNlcl9pZCI6MTl9.BT9FTaJT8vCe42fx8gQxAAnL05LhF4kD5SECNGtP0E4}}
 
-{
 
-}
