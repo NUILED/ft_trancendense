@@ -22,13 +22,14 @@ class LoginView(APIView):
             return Response(loginserializer.data, status=status.HTTP_200_OK)
         return Response({"detail": "User with this email already exists."}, status=status.HTTP_400_BAD_REQUEST)
 
+
 class Sign_upView(APIView):
     def post(self,request):
         try:
             serialaizer = User_Register(data=request.data)
             if serialaizer.is_valid(raise_exception=True):
                 user = serialaizer.save()
-                # self.send_confirmation_email(user)
+                self.send_confirmation_email(user)
                 return Response(
                     {'detail': 'Registration successful. Please confirm your email.'},
                     status=status.HTTP_201_CREATED
@@ -39,18 +40,16 @@ class Sign_upView(APIView):
                     {'detail': 'email already exists.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            elif 'password' in str(e):
+            elif 'passwords' in str(e):
                 return Response(
                     {'detail': 'Passwords do not matches.'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             else:
                 return Response(
-                    {'detail': 'Internal Error'},
+                    {'detail': str(e)},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-
 
 
     def send_confirmation_email(self,user):
@@ -61,8 +60,7 @@ class Sign_upView(APIView):
             activation_link = f"http://localhost:8000/api/activate/?token={token}"
             mail_subject = "Account Activation"
             message = f"Please click the following link to activate your account: {activation_link}"
-            print(message)
-            send_mail(mail_subject, 'HI', 'sifi@gmail.com', [user.email])
+            send_mail(mail_subject, message , 'admin@admin.com', [user.email])
         except Exception as e:
             pass    
 
@@ -77,10 +75,10 @@ class ConfirmEmailView(APIView):
             if not user:
                 return Response({'detail': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
 
-            if user.is_active:
+            if user.is_valid:
                 return Response({'detail': 'Confirmation already done'}, status=status.HTTP_200_OK)
 
-            user.is_active = True
+            user.is_valid = True
             user.save()
             return Response({'detail': 'Confirmation successful'}, status=status.HTTP_200_OK)
         
@@ -224,7 +222,6 @@ class LogoutView(APIView):
                 return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"detail": "Authorization header missing or invalid."}, status=status.HTTP_400_BAD_REQUEST)
-
 
 class SetPasswordView(APIView):    
     pass #for decode token

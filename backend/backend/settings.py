@@ -98,12 +98,13 @@ DATABASES = {
 
 AUTH_USER_MODEL = 'profiles.User_profile'
 
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
-EMAIL_HOST_USER = 'c989bb4787ce9b'
-EMAIL_HOST_PASSWORD = 'c69dce74278db4'
+EMAIL_HOST_USER = '85b953868b3837'
+EMAIL_HOST_PASSWORD = '38cc96779addb5'
 EMAIL_PORT = '2525'
-EMAIL_USE_TLS = True
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = False  # Set this to True if using SSL
 
 
 
@@ -153,7 +154,6 @@ STATIC_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
 API_URL_INFO = 'https://api.intra.42.fr/v2/me'
 API_URL = 'https://api.intra.42.fr/oauth/token'
 
@@ -172,8 +172,6 @@ DATA = {
     'code': code,
     'redirect_uri': 'http://127.0.0.1:8000/api/callback'
 }
-
-
 
 SIMPLE_JWT = {
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
