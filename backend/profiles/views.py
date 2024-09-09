@@ -10,12 +10,13 @@ from django.conf import settings
 import requests
 import json
 from django.core.mail import send_mail 
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated ,AllowAny
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]  # Allow anyone, even unauthenticated users
     def post(self, request):
         loginserializer = LoginUserSerializer(data=request.data, context={'context': request})
         if loginserializer.is_valid(raise_exception=True):
@@ -24,6 +25,7 @@ class LoginView(APIView):
 
 
 class Sign_upView(APIView):
+    permission_classes = [AllowAny]  # Allow anyone, even unauthenticated users
     def post(self,request):
         try:
             serialaizer = User_Register(data=request.data)
@@ -209,19 +211,16 @@ class ResetPasswordView(APIView):
             return Response({"detail": "Authorization header missing or invalid."}, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutView(APIView):
+    # here we just get the refresh token directly from the header
     permission_classes = [IsAuthenticated]
     def post(self, request):
-        auth_header = request.headers.get('Authorization')
-        if auth_header and auth_header.startswith('Bearer '):
-            try:
-                token = auth_header.split(' ')[1]
-                refresh_token = RefreshToken(token)
-                refresh_token.blacklist()
-                return Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
-            except (TokenError, InvalidToken):
-                return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"detail": "Authorization header missing or invalid."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            token = request.data['refresh']
+            refresh_token = RefreshToken(token)
+            refresh_token.blacklist()
+            return Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
+        except (TokenError, InvalidToken):
+            return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
 
 class SetPasswordView(APIView):    
     pass #for decode token

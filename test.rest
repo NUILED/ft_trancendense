@@ -3,23 +3,34 @@
 # # {}
 
 
-POST http://127.0.0.1:8000/api/signup
+POST http://127.0.0.1:8000/api/login
 Content-Type: application/json
 
 {
-    "first_name":"flirsts_name",
-    "last_name":"firsmt_sname",
-    "email":"dijad71090@esterace.com",
-    "password":"aoutifra1",
-    "password1":"aoutifra1"
+    # "first_name":"flirsts_name",
+    # "last_name":"firsmt_sname",
+    "email":"dijad7190@esterace.com",
+    "password":"aoutifra1"
+    # "password1":"aoutifra1"
 }
 
 
 
 
 
+#############
 
+# GET http://127.0.0.1:8000/api/user_info
+# Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1ODc5MzgwLCJpYXQiOjE3MjU4NzkwODAsImp0aSI6IjQ4NjI1ZjQ3Yjg3ZTQzM2ZhMzMzYjRmZDdhYjFlODU0IiwidXNlcl9pZCI6MX0.XpJJvhaJWEqqE4fq1NcRBo2s-qJ9_glcv3ZRCNgoUxI
+# Content-Type: application/json
 
+# {
+#     # "first_name":"flirsts_name",
+#     # "last_name":"firsmt_sname",
+#     "email":"dijad7190@esterace.com"
+#     # "password":"aoutifra1"
+#     # "password1":"aoutifra1"
+# }
 
 
 
@@ -40,3 +51,10 @@ Content-Type: application/json
 ###
 
 
+POST http://127.0.0.1:8000/api/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1ODgyMDE3LCJpYXQiOjE3MjU4ODE3MTcsImp0aSI6IjA2M2YyMTQ1MTY0MDRkYTliYzEzNzI2MzYxMmU5OWEyIiwidXNlcl9pZCI6MX0.nZwMjRJK8fWMBNZfa2mjaYhgo5CoV4xd5BeMq6AWZRU
+Content-Type: application/json
+
+{
+  "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTcyNTk2ODExNywiaWF0IjoxNzI1ODgxNzE3LCJqdGkiOiI0OTM2NDBmOWFkODM0N2E1ODgwOTZkOTIwNTI4MjIzMiIsInVzZXJfaWQiOjF9.Ms1Y-dK4CjfPg0eTvnjO6Z2FzdTIC9Zv6VtW6X8QFoA"
+}
