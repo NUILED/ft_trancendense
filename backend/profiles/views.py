@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
-from .serializer import UserSerializer , LoginUserSerializer ,User_Register ,RestSerializer
+from .serializer import UserSerializer , LoginUserSerializer ,User_Register ,RestSerializer ,SetPassword
 from .models import User_profile
 import jwt 
 from django.core.serializers import deserialize
@@ -22,7 +22,6 @@ class LoginView(APIView):
         if loginserializer.is_valid(raise_exception=True):
             return Response(loginserializer.data, status=status.HTTP_200_OK)
         return Response({"detail": "User with this email already exists."}, status=status.HTTP_400_BAD_REQUEST)
-
 
 class Sign_upView(APIView):
     permission_classes = [AllowAny]  # Allow anyone, even unauthenticated users
@@ -222,5 +221,10 @@ class LogoutView(APIView):
         except (TokenError, InvalidToken):
             return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
 
-class SetPasswordView(APIView):    
-    pass #for decode token
+    #django set password view
+# class SetPasswordView(APIView):    
+#     permission_classes = [IsAuthenticated]
+#     def post(self,request):
+#         try:
+#             serializer = serp
+

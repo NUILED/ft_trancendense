@@ -85,7 +85,8 @@ class RestSerializer(serializers.ModelSerializer):
         except:
             raise AuthenticationFailed('User not Found or password incorrect')
 
-    def send_confirmation_email(self,user):#work needs here
+    def send_confirmation_email(self,user):
+        #work needs here
         try:
             id = user.id          
             payload = {'id': id}

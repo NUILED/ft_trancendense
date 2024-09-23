@@ -110,7 +110,6 @@ EMAIL_USE_TLS = False
 EMAIL_USE_SSL = False  # Set this to True if using SSL
 
 
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 

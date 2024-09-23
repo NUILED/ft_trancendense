@@ -2,7 +2,6 @@
 # # Content-Type: application/json
 # # {}
 
-
 POST http://127.0.0.1:8000/api/login
 Content-Type: application/json
 
@@ -13,10 +12,6 @@ Content-Type: application/json
     "password":"aoutifra1"
     # "password1":"aoutifra1"
 }
-
-
-
-
 
 #############
 
@@ -33,7 +28,6 @@ Content-Type: application/json
 # }
 
 
-
 # POST https://api.intra.42.fr/oauth/token
 # Content-Type: application/json
 
@@ -45,11 +39,9 @@ Content-Type: application/json
 #     "redirect_uri": "http://127.0.0.1:8000/api/callback"
 # }
 
-
 ### Sign Up Request
 # GET   https://api.intra.42.fr/v2/me
 ###
-
 
 POST http://127.0.0.1:8000/api/logout
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI1ODgyMDE3LCJpYXQiOjE3MjU4ODE3MTcsImp0aSI6IjA2M2YyMTQ1MTY0MDRkYTliYzEzNzI2MzYxMmU5OWEyIiwidXNlcl9pZCI6MX0.nZwMjRJK8fWMBNZfa2mjaYhgo5CoV4xd5BeMq6AWZRU
