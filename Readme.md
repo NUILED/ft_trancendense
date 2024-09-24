@@ -6,8 +6,7 @@
 ```
     POST http://127.0.0.1:8000/api/login
     Content-Type: application/json
-    Authorization: Bearer TOKEN
-    
+
     {
         "email":"dijad7190@esterace.com",
         "password":"aoutifra1"
@@ -20,8 +19,7 @@
 ```
     POST http://127.0.0.1:8000/api/signup
     Content-Type: application/json
-    Authorization: Bearer TOKEN
-
+    
     {
         "first_name":"flirsts_name",
         "last_name":"firsmt_sname",

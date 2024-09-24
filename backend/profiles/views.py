@@ -222,6 +222,8 @@ class LogoutView(APIView):
             return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
 
     #django set password view
+
+
 # class SetPasswordView(APIView):    
 #     permission_classes = [IsAuthenticated]
 #     def post(self,request):
