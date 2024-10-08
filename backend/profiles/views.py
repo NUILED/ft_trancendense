@@ -13,15 +13,30 @@ from django.core.mail import send_mail
 from rest_framework.permissions import IsAuthenticated ,AllowAny
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from rest_framework_simplejwt.tokens import RefreshToken
+import pyotp
 
 
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow anyone, even unauthenticated users
+    serializer_class = LoginUserSerializer
     def post(self, request):
-        loginserializer = LoginUserSerializer(data=request.data, context={'context': request})
-        if loginserializer.is_valid(raise_exception=True):
-            return Response(loginserializer.data, status=status.HTTP_200_OK)
-        return Response({"detail": "User with this email already exists."}, status=status.HTTP_400_BAD_REQUEST)
+        data = self.serializer_class(data=request.data)
+        try:
+            if data.is_valid(raise_exception=True):
+                user = data.validated_data
+                if user.is2fa:
+                    return Response({'info':'2fa enabled'})
+                token = user.token()
+                return Response({
+                    'email': user.email,
+                    'first_name':user.first_name,
+                    'access': str(token.access_token),
+                    'refresh': str(token),
+                })
+        except Exception as e:
+            return Response({'error': str(e)}, status=500)
+
+        
 
 class Sign_upView(APIView):
     permission_classes = [AllowAny]  # Allow anyone, even unauthenticated users
@@ -52,7 +67,6 @@ class Sign_upView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-
     def send_confirmation_email(self,user):
         try:
             id = user.id          
@@ -64,33 +78,6 @@ class Sign_upView(APIView):
             send_mail(mail_subject, message , 'admin@admin.com', [user.email])
         except Exception as e:
             pass    
-
-class ConfirmEmailView(APIView):
-    def get(self, request):
-        token = request.GET.get('token')
-        try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-            user_id = payload.get('id')
-            user = User_profile.objects.filter(id=user_id).first()
-
-            if not user:
-                return Response({'detail': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
-
-            if user.is_valid:
-                return Response({'detail': 'Confirmation already done'}, status=status.HTTP_200_OK)
-
-            user.is_valid = True
-            user.save()
-            return Response({'detail': 'Confirmation successful'}, status=status.HTTP_200_OK)
-        
-        except jwt.ExpiredSignatureError:
-            return Response({'detail': 'Token has expired'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        except jwt.InvalidTokenError:
-            return Response({'detail': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        except Exception as e:
-            return Response({'detail': 'Confirmation unsuccessful'}, status=status.HTTP_400_BAD_REQUEST)
 
 class CallBack(APIView):
     def get(self,request):
@@ -199,7 +186,6 @@ class Delete_user(APIView):
         except:
             return Response({'info':'user not found'})
 
-class ResetPasswordView(APIView):
     def post(self,request):
         try:
             resetserializer = RestSerializer(data=request.data)
@@ -223,10 +209,54 @@ class LogoutView(APIView):
 
     #django set password view
 
-
-# class SetPasswordView(APIView):    
-#     permission_classes = [IsAuthenticated]
-#     def post(self,request):
-#         try:
-#             serializer = serp
-
+class Control2Fa(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self,request):
+        try:
+            email = request.data['email']
+            user = User_profile.objects.get(email=email)
+            if user:
+                user.pyotp_secret = pyotp.random_base32()
+                otp = pyotp.TOTP(user.pyotp_secret).provisioning_uri(user.email, issuer_name="2fa")
+                user.is2fa = True
+                user.save()
+                return Response({'otp':otp,'info':'2fa enabled'},status=200)
+            else:
+                return Response({'info':'user not found'},status=400)
+        except:
+            return Response({'info':'user not found'},status=400)
+    
+    def get(self,request):
+        try:
+            email = request.data['email']
+            user = User_profile.objects.get(email=email)
+            if user:
+                user.is2fa = False
+                user.save()
+                return Response({'info':'2fa disabled'},status=200)
+            else:
+                return Response({'info':'user not found'},status=400)
+        except:
+            return Response({'info':'user not found'},status=400)
+        
+class Signin2fa(APIView):
+    def post(self,request):
+        try:
+            email = request.data['email']
+            user = User_profile.objects.get(email=email)
+            if user and user.is2fa:
+                totp = pyotp.TOTP(user.pyotp_secret)
+                if totp.verify(request.data['otp']):
+                    token = user.token()
+                    return Response({
+                        'email': user.email,
+                        'first_name':user.first_name,
+                        'access': str(token.access_token),
+                        'refresh': str(token),
+                    },status=200)
+                else:
+                    return Response({'info':'invalid otp'},status=400)
+            else:
+                return Response({'info':'user not found or 2fa not enabled'},status=400)
+        except:
+            return Response({'info':'user not found'},status=400)

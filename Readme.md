@@ -19,7 +19,7 @@
 ```
     POST http://127.0.0.1:8000/api/signup
     Content-Type: application/json
-    
+
     {
         "first_name":"flirsts_name",
         "last_name":"firsmt_sname",
@@ -46,3 +46,7 @@
         "email":"email0@email.com"
     }
 ```
+
+
+
+ 

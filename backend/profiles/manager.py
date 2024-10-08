@@ -10,7 +10,7 @@ class UserManager(BaseUserManager):
         except ValidationError:
             raise ValueError(_('please validate email'))
             
-    def create_user(self,email,first_name,last_name,password,**extra_fields):
+    def create_user(self,email,first_name,last_name,password=None,**extra_fields):
         if email:
             email = self.normalize_email(email)
             self.email_validator(email)
@@ -25,7 +25,7 @@ class UserManager(BaseUserManager):
         user.save(self._db)
         return user
     
-    def create_superuser(self,email,first_name,last_name,password,**extra_fields):
+    def create_superuser(self,email,first_name,last_name,password=None,**extra_fields):
         extra_fields.setdefault('is_staff',True)
         extra_fields.setdefault('is_superuser',True)
         extra_fields.setdefault('is_verified',True)

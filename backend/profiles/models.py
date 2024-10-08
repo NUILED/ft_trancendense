@@ -15,6 +15,11 @@ class User_profile(AbstractBaseUser,PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=True)
+    pyotp_secret = models.CharField(max_length=255, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField
+    last_login = models.DateTimeField(auto_now=True)
+    is2fa = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name','last_name']
