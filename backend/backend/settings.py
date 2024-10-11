@@ -84,7 +84,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
@@ -100,17 +99,7 @@ DATABASES = {
     }
 }
 
-# Email settings
-EMAIL_BACKEND = config('EMAIL_BACKEND')
-EMAIL_HOST = config('EMAIL_HOST')
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=False, cast=bool)
-
 AUTH_USER_MODEL = 'profiles.User_profile'
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -158,11 +147,9 @@ STATIC_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-API_URL_INFO = config('API_URL_INFO')
-API_URL = config('API_URL')
-CLIENT_ID = config('CLIENT_ID')
-CLIENT_SECRET = config('CLIENT_SECRET')
-code = config('CODE', default='')
+
+CLIENT_ID = 'u-s4t2ud-84fdb475704e23d6d0208d0eb1219bdc3b8b724d1159042bff2a0f825ca8f30f'
+CLIENT_SECRET = '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'
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=config('ACCESS_TOKEN_LIFETIME', default=5, cast=int)),
@@ -170,4 +157,18 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": config('ROTATE_REFRESH_TOKENS', default=True, cast=bool),
     "BLACKLIST_AFTER_ROTATION": config('BLACKLIST_AFTER_ROTATION', default=True, cast=bool),
 }
+
+GITHUB_CLIENT_ID = 'Ov23liNBQecMFalZWY8V'
+GITHUB_REDIRECT_URI = 'http://localhost:8000/api/socialauth/?platform=github'
+GITHUB_CLIENT_SECRET = '613e2a4207efdff1c9b67c5bc06e1b82949b68de'
+
+
+API_URL='https://api.intra.42.fr/oauth/token'
+INTRA_REDIRECT_URI = 'http://localhost:8000/api/socialauth/'
+
+
+G_CLIENT_ID = '100639936732-n0ju3hqvr1td4ljkqg1iso1k1vbe1tqv.apps.googleusercontent.com'
+G_REDIRECT_URI = 'http://localhost:8000/api/socialauth/?platform=gmail'
+G_CLIENT_SECRET = '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'
+
 

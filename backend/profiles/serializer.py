@@ -3,23 +3,23 @@ from .models import User_profile
 from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from rest_framework.exceptions import AuthenticationFailed
+import requests
 
 class User_Register(serializers.ModelSerializer):
+    email = serializers.EmailField(max_length=55, min_length=8, allow_blank=False)
     password = serializers.CharField(max_length=68,min_length=6,write_only=True)
-    password1 = serializers.CharField(max_length=68,min_length=6,write_only=True)
 
     class Meta:
         model = User_profile
-        fields = ['email','first_name','last_name' ,'password','password1']
-    def validate(self,attrs):
-        password = attrs.get('password','')
-        password1 = attrs.pop('password1','')
-        if password != password1:
-            raise serializers.ValidationError('password dose not match')
-        return attrs
+        fields = ['email','first_name','last_name','username' ,'password']
 
     def create(self, validated_data):
+        password = validated_data.pop('password',None)
         user = User_profile.objects.create_user(**validated_data)
+        user.set_password(password)
+        if not user.username:
+            user.username = user.email.split('@')[0]
+        user.save()
         return user
 
 class UserSerializer(serializers.ModelSerializer):
@@ -38,18 +38,15 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-class LoginUserSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(max_length=255)
-    password = serializers.CharField(max_length=255,write_only=True)
-    class Meta:
-        model = User_profile
-        fields = ['email','password','access','refresh']
+class LoginUserSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=55, min_length=8, allow_blank=False)
+    password = serializers.CharField(max_length=16,min_length=8,write_only=True,required=True)
 
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
         try:
-            user = User_profile.objects.get(email=email) #check password
+            user = User_profile.objects.get(email=email)
         except:
             raise AuthenticationFailed("invalid credentials try again")
         
@@ -59,17 +56,40 @@ class LoginUserSerializer(serializers.ModelSerializer):
         return user
 
 class SocialAuthontication(serializers.Serializer):
-    def validate(self,attrs):
-        access_token = attrs.get('access_token')
-        platform = attrs.get('platform')
+    def validate(self, data):
+        data = self.initial_data
+        access_token = data['access_token']
+        platform = data['platform']
         headers = {'Authorization':f'Bearer {access_token}'}
-        if access_token is None or platform is None:
-            raise AuthenticationFailed('access token is required')
-        if platfrom == "github":
-            response = requests.get('https://api.github.com/user',headers=headers,timeout=10000)
+        if platform == "github":
+            response = requests.get('https://api.github.com/user/emails',headers=headers,timeout=10000)
             if response.status_code != 200:
                 raise AuthenticationFailed('invalid access token')
-            email = response.json().get('email')
+            res = response.json()
+            for email in res:
+                if email['primary'] == True:
+                    email = email['email']
+                    break
             if email is None:
                 raise AuthenticationFailed('email is required')
-        return email
+        elif platform == "gmail":
+            response = requests.get('https://www.googleapis.com/oauth2/v1/userinfo',headers=headers,timeout=10000)
+            if response.status_code != 200:
+                raise AuthenticationFailed('invalid access token')
+            res = response.json()
+            email = res['email']
+            if email is None:
+                raise AuthenticationFailed('email is required')
+        elif platform == "42":
+            response = requests.get('https://api.intra.42.fr/v2/me',headers=headers,timeout=10000)
+            if response.status_code != 200:
+                raise AuthenticationFailed('invalid access token')
+            res = response.json()
+            email = res['email']
+            if email is None:
+                raise AuthenticationFailed('email is required')
+        user = User_profile.objects.filter(email=email).first()
+        if not user:
+            User_profile.objects.create(email=email,username=email.split('@')[0],password="123456")
+            user = User_profile.objects.filter(email=email).first()
+        return user

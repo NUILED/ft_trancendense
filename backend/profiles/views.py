@@ -16,6 +16,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 import pyotp
 #import redirect from django.shortcuts
 from django.shortcuts import redirect
+
+
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow anyone, even unauthenticated users
     serializer_class = LoginUserSerializer
@@ -28,8 +30,6 @@ class LoginView(APIView):
                     return Response({'info':'2fa enabled'})
                 token = user.token()
                 return Response({
-                    'email': user.email,
-                    'first_name':user.first_name,
                     'access': str(token.access_token),
                     'refresh': str(token),
                 })
@@ -40,42 +40,24 @@ class Sign_upView(APIView):
     permission_classes = [AllowAny]  # Allow anyone, even unauthenticated users
     def post(self,request):
         try:
+            email = request.data.get('email', None)
+            username = request.data.get('username', None)
+            if User_profile.objects.filter(email=email).exists():
+                raise AuthenticationFailed('Email already exists')
+            if User_profile.objects.filter(username=username).exists():
+                raise AuthenticationFailed('Username already exists')
             serialaizer = User_Register(data=request.data)
             if serialaizer.is_valid(raise_exception=True):
                 user = serialaizer.save()
-                self.send_confirmation_email(user)
                 return Response(
-                    {'detail': 'Registration successful. Please confirm your email.'},
+                    {'detail': 'Registration successful.'},
                     status=status.HTTP_201_CREATED
                 )
         except Exception as e:
-            if 'email' in str(e):
-                return Response(
-                    {'detail': 'email already exists.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            elif 'passwords' in str(e):
-                return Response(
-                    {'detail': 'Passwords do not matches.'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            else:
                 return Response(
                     {'detail': str(e)},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-
-    def send_confirmation_email(self,user):
-        try:
-            id = user.id          
-            payload = {'id': id}
-            token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
-            activation_link = f"http://localhost:8000/api/activate/?token={token}"
-            mail_subject = "Account Activation"
-            message = f"Please click the following link to activate your account: {activation_link}"
-            send_mail(mail_subject, message , 'admin@admin.com', [user.email])
-        except Exception as e:
-            pass    
 
 class CallBack(APIView):
     def get(self,request):
@@ -89,8 +71,6 @@ class CallBack(APIView):
                 if user:
                     token = user.token()
                     return Response ({
-                        'email': user.email,
-                        'first_name':user.first_name,
                         'access': str(token.access_token),
                         'refresh': str(token),
                     })
@@ -108,11 +88,8 @@ class CallBack(APIView):
                 user = User_profile.objects.filter(email=email).first()
                 user.is_active = True
                 user.save()
-            if user:
                 token = user.token()
                 return {
-                    'email': user.email,
-                    'first_name':user.first_name,
                     'access': str(token.access_token),
                     'refresh': str(token),
                 }
@@ -161,13 +138,10 @@ class Get_user_info(APIView):
     permission_classes = [IsAuthenticated]
     def get(self,request):
         try:
-            email = request.data['email']
-            user = User_profile.objects.filter(email=email).first()
-            if user:
-                serialaizer = UserSerializer(user)
-                return Response({'info':serialaizer.data})
-            else:
-                return Response({'info':'user not found'})
+            user = request.user
+            serialized_user = UserSerializer(user.data)
+            serialized_user.is_valid()
+            return Response(serialized_user.data)
         except:
             return Response({'info':'user not found'})
 
@@ -183,15 +157,6 @@ class Delete_user(APIView):
                 return Response({'info':'user not found'})
         except:
             return Response({'info':'user not found'})
-
-    def post(self,request):
-        try:
-            resetserializer = RestSerializer(data=request.data)
-            if resetserializer.is_valid(raise_exception=True):
-                return Response({"detail": "email has been send to reset password"}, status=status.HTTP_200_OK)
-            return Response({"detail": "Authorization header missing or invalid."}, status=status.HTTP_400_BAD_REQUEST)
-        except:
-            return Response({"detail": "Authorization header missing or invalid."}, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutView(APIView):
     # here we just get the refresh token directly from the header
@@ -247,8 +212,6 @@ class Signin2fa(APIView):
                 if totp.verify(request.data['otp']):
                     token = user.token()
                     return Response({
-                        'email': user.email,
-                        'first_name':user.first_name,
                         'access': str(token.access_token),
                         'refresh': str(token),
                     },status=200)
@@ -258,7 +221,6 @@ class Signin2fa(APIView):
                 return Response({'info':'user not found or 2fa not enabled'},status=400)
         except:
             return Response({'info':'user not found'},status=400)
-
 
 class SocialAuth(APIView):
     permission_classes = [AllowAny]
@@ -281,8 +243,6 @@ class SocialAuth(APIView):
         except requests.exceptions.RequestException as e:
             return Response({'info':'error'},status=400)
 
-            
-
 class SocialAuthverify(APIView):
     permission_classes = [AllowAny]
     serializer_class = SocialAuthontication
@@ -291,26 +251,27 @@ class SocialAuthverify(APIView):
             headers = {'Accept': 'application/json'}
             platform = request.GET.get('platform')
             code = request.GET.get('code')
-            platform = platform.strip().lower()
-            if not platform or not code:
+            if not platform and not code:
                 raise AuthenticationFailed('platform and code are required')
-            if platform == 'github':
-                url = 'https://github.com/login/oauth/access_token'
-                data = {
-                'client_id': settings.GITHUB_CLIENT_ID,
-                'client_secret': settings.GITHUB_CLIENT_SECRET,
-                'code': code,
-                'redirect_uri': settings.GITHUB_REDIRECT_URI
-                }
-            elif platform == 'gmail':
-                url = 'https://oauth2.googleapis.com/token'
-                data = {
-                    'client_id': settings.G_CLIENT_ID,
-                    'client_secret': settings.G_CLIENT_SECRET,
+            if platform:
+                platform = platform.strip().lower()
+                if platform == 'github':
+                    url = 'https://github.com/login/oauth/access_token'
+                    data = {
+                    'client_id': settings.GITHUB_CLIENT_ID,
+                    'client_secret': settings.GITHUB_CLIENT_SECRET,
                     'code': code,
-                    'redirect_uri': settings.G_REDIRECT_URI,
-                    'grant_type': 'authorization_code'
-                }
+                    'redirect_uri': settings.GITHUB_REDIRECT_URI
+                    }
+                elif platform == 'gmail':
+                    url = 'https://oauth2.googleapis.com/token'
+                    data = {
+                        'client_id': settings.G_CLIENT_ID,
+                        'client_secret': settings.G_CLIENT_SECRET,
+                        'code': code,
+                        'redirect_uri': settings.G_REDIRECT_URI,
+                        'grant_type': 'authorization_code'
+                    }
             else:
                 url = 'https://api.intra.42.fr/oauth/token'
                 data = {    
@@ -318,17 +279,21 @@ class SocialAuthverify(APIView):
                         'client_id': settings.CLIENT_ID,
                         'client_secret': settings.CLIENT_SECRET,
                         'code': code,
-                        'redirect_uri': settings.API_URL
+                        'redirect_uri': settings.INTRA_REDIRECT_URI
                     }
+                platform = '42'
             response = requests.post(url, data=data, headers=headers, timeout=10000)
             if response.status_code != 200:
                 raise AuthenticationFailed('invalid access token')
-            print(response.json())
+            access_token = response.json()['access_token']
+            data = {
+                'access_token': access_token,
+                'platform': platform
+            }
+            serializer = self.serializer_class(data=data)
+            if serializer.is_valid(raise_exception=True):
+                email = serializer.validated_data
             return Response({'info':'successfull'}, status=200)       
-            # serializer = self.serializer_class()
-            # email = serializer.is_valid(raise_exception=True)
-            # print(email)
-            return Response({'info':'success'}, status=200)
         except requests.exceptions.RequestException as e:
             return Response({'info':str(e)}, status=400)
             

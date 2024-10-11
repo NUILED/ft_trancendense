@@ -6,6 +6,7 @@ from .manager import UserManager
 class User_profile(AbstractBaseUser,PermissionsMixin):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
+    username = models.CharField(max_length=20, unique=True, null=True)
     email = models.EmailField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
     avatar = models.CharField(max_length=255, default='img url')
@@ -16,14 +17,16 @@ class User_profile(AbstractBaseUser,PermissionsMixin):
     is_superuser = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=True)
     pyotp_secret = models.CharField(max_length=255, default='')
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField
-    last_login = models.DateTimeField(auto_now=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=False, null=True)
+    last_login = models.DateTimeField(auto_now=True, null=True)
     is2fa = models.BooleanField(default=False)
+    wins = models.IntegerField(default=0)
+    losses = models.IntegerField(default=0)
+    draws = models.IntegerField(default=0)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name','last_name']
-
     objects = UserManager()
 
     def token(self):
