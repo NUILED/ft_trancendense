@@ -178,6 +178,6 @@ GITHUB_CLIENT_SECRET = '613e2a4207efdff1c9b67c5bc06e1b82949b68de'
 API_URL='https://api.intra.42.fr/oauth/token'
 INTRA_REDIRECT_URI = 'http://localhost:8000/api/socialauth/'
 
-# G_CLIENT_ID = '100639936732-n0ju3hqvr1td4ljkqg1iso1k1vbe1tqv.apps.googleusercontent.com'
+G_CLIENT_ID = config('G_CLIENT_ID')
 G_REDIRECT_URI = 'http://localhost:8000/api/socialauth/?platform=gmail'
-G_CLIENT_SECRET = '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'
+G_CLIENT_SECRET = config('G_CLIENT_SECRET')
