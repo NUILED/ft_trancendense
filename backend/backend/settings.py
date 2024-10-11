@@ -164,14 +164,6 @@ CLIENT_ID = config('CLIENT_ID')
 CLIENT_SECRET = config('CLIENT_SECRET')
 code = config('CODE', default='')
 
-DATA = {
-    'grant_type': 'authorization_code',
-    'client_id': CLIENT_ID,
-    'client_secret': CLIENT_SECRET,
-    'code': code,
-    'redirect_uri': 'http://127.0.0.1:8000/api/callback'
-}
-
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=config('ACCESS_TOKEN_LIFETIME', default=5, cast=int)),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
@@ -179,4 +171,13 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": config('BLACKLIST_AFTER_ROTATION', default=True, cast=bool),
 }
 
+GITHUB_CLIENT_ID = 'Ov23liNBQecMFalZWY8V'
+GITHUB_REDIRECT_URI = 'http://localhost:8000/api/socialauth/?platform=github'
+GITHUB_CLIENT_SECRET = '613e2a4207efdff1c9b67c5bc06e1b82949b68de'
 
+API_URL='https://api.intra.42.fr/oauth/token'
+INTRA_REDIRECT_URI = 'http://localhost:8000/api/socialauth/'
+
+G_CLIENT_ID = '100639936732-n0ju3hqvr1td4ljkqg1iso1k1vbe1tqv.apps.googleusercontent.com'
+G_REDIRECT_URI = 'http://localhost:8000/api/socialauth/?platform=gmail'
+G_CLIENT_SECRET = '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'

@@ -1,7 +1,7 @@
 
 from django.urls import re_path 
-from .views import Delete_user ,Sign_upView ,LoginView , CallBack ,Get_user_info ,Update_user_info ,\
-    ConfirmEmailView ,LogoutView
+from .views import Delete_user ,Sign_upView ,LoginView , CallBack ,Get_user_info ,Update_user_info ,LogoutView \
+    , SocialAuth ,SocialAuthverify
 from django.contrib import admin
 
 urlpatterns = [
@@ -12,6 +12,7 @@ urlpatterns = [
     re_path('user_info', Get_user_info.as_view()),
     re_path('up_user', Update_user_info.as_view()),
     re_path('del_user', Delete_user.as_view()),
-    re_path('activate', ConfirmEmailView.as_view()),
+    re_path('oauth', SocialAuth.as_view()),
+    re_path('socialauth', SocialAuthverify.as_view()),
     # re_path('get42token', Get42Tok.as_view()),
 ]

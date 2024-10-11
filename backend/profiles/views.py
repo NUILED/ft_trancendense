@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
-from .serializer import UserSerializer , LoginUserSerializer ,User_Register ,RestSerializer ,SetPassword
+from .serializer import UserSerializer , LoginUserSerializer ,User_Register , SocialAuthontication
 from .models import User_profile
 import jwt 
 from django.core.serializers import deserialize
@@ -14,8 +14,8 @@ from rest_framework.permissions import IsAuthenticated ,AllowAny
 from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 from rest_framework_simplejwt.tokens import RefreshToken
 import pyotp
-
-
+#import redirect from django.shortcuts
+from django.shortcuts import redirect
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow anyone, even unauthenticated users
     serializer_class = LoginUserSerializer
@@ -35,8 +35,6 @@ class LoginView(APIView):
                 })
         except Exception as e:
             return Response({'error': str(e)}, status=500)
-
-        
 
 class Sign_upView(APIView):
     permission_classes = [AllowAny]  # Allow anyone, even unauthenticated users
@@ -260,3 +258,77 @@ class Signin2fa(APIView):
                 return Response({'info':'user not found or 2fa not enabled'},status=400)
         except:
             return Response({'info':'user not found'},status=400)
+
+
+class SocialAuth(APIView):
+    permission_classes = [AllowAny]
+    def post(self,request):
+        try:
+            platform = request.data['platform']
+            if platform == 'github':
+                client_id = settings.GITHUB_CLIENT_ID
+                redirect_uri = settings.GITHUB_REDIRECT_URI
+                url = f'https://github.com/login/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&scope=user:email'
+            elif platform == 'gmail':
+                client_id = settings.G_CLIENT_ID
+                redirect_uri = settings.G_REDIRECT_URI
+                url = f'https://accounts.google.com/o/oauth2/auth?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&scope=email'
+            elif platform == "42":
+                client_id = settings.CLIENT_ID
+                redirect_uri = settings.INTRA_REDIRECT_URI
+                url = f'https://api.intra.42.fr/oauth/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code'
+            return redirect(url)
+        except requests.exceptions.RequestException as e:
+            return Response({'info':'error'},status=400)
+
+            
+
+class SocialAuthverify(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = SocialAuthontication
+    def get(self, request):
+        try:
+            headers = {'Accept': 'application/json'}
+            platform = request.GET.get('platform')
+            code = request.GET.get('code')
+            platform = platform.strip().lower()
+            if not platform or not code:
+                raise AuthenticationFailed('platform and code are required')
+            if platform == 'github':
+                url = 'https://github.com/login/oauth/access_token'
+                data = {
+                'client_id': settings.GITHUB_CLIENT_ID,
+                'client_secret': settings.GITHUB_CLIENT_SECRET,
+                'code': code,
+                'redirect_uri': settings.GITHUB_REDIRECT_URI
+                }
+            elif platform == 'gmail':
+                url = 'https://oauth2.googleapis.com/token'
+                data = {
+                    'client_id': settings.G_CLIENT_ID,
+                    'client_secret': settings.G_CLIENT_SECRET,
+                    'code': code,
+                    'redirect_uri': settings.G_REDIRECT_URI,
+                    'grant_type': 'authorization_code'
+                }
+            else:
+                url = 'https://api.intra.42.fr/oauth/token'
+                data = {    
+                        'grant_type': 'authorization_code',
+                        'client_id': settings.CLIENT_ID,
+                        'client_secret': settings.CLIENT_SECRET,
+                        'code': code,
+                        'redirect_uri': settings.API_URL
+                    }
+            response = requests.post(url, data=data, headers=headers, timeout=10000)
+            if response.status_code != 200:
+                raise AuthenticationFailed('invalid access token')
+            print(response.json())
+            return Response({'info':'successfull'}, status=200)       
+            # serializer = self.serializer_class()
+            # email = serializer.is_valid(raise_exception=True)
+            # print(email)
+            return Response({'info':'success'}, status=200)
+        except requests.exceptions.RequestException as e:
+            return Response({'info':str(e)}, status=400)
+            

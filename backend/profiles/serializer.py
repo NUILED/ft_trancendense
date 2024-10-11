@@ -38,7 +38,6 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-
 class LoginUserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=255)
     password = serializers.CharField(max_length=255,write_only=True)
@@ -59,8 +58,18 @@ class LoginUserSerializer(serializers.ModelSerializer):
         
         return user
 
-class SocialAuthontication(APIView):
-    class Meta:
-        model = User_profile
-        fields = ['email','first_name','last_name','avatar','bio']
-    
+class SocialAuthontication(serializers.Serializer):
+    def validate(self,attrs):
+        access_token = attrs.get('access_token')
+        platform = attrs.get('platform')
+        headers = {'Authorization':f'Bearer {access_token}'}
+        if access_token is None or platform is None:
+            raise AuthenticationFailed('access token is required')
+        if platfrom == "github":
+            response = requests.get('https://api.github.com/user',headers=headers,timeout=10000)
+            if response.status_code != 200:
+                raise AuthenticationFailed('invalid access token')
+            email = response.json().get('email')
+            if email is None:
+                raise AuthenticationFailed('email is required')
+        return email
