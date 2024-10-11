@@ -171,13 +171,3 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": config('BLACKLIST_AFTER_ROTATION', default=True, cast=bool),
 }
 
-GITHUB_CLIENT_ID = 'Ov23liNBQecMFalZWY8V'
-GITHUB_REDIRECT_URI = 'http://localhost:8000/api/socialauth/?platform=github'
-GITHUB_CLIENT_SECRET = '613e2a4207efdff1c9b67c5bc06e1b82949b68de'
-
-API_URL='https://api.intra.42.fr/oauth/token'
-INTRA_REDIRECT_URI = 'http://localhost:8000/api/socialauth/'
-
-G_CLIENT_ID = config('G_CLIENT_ID')
-G_REDIRECT_URI = 'http://localhost:8000/api/socialauth/?platform=gmail'
-G_CLIENT_SECRET = config('G_CLIENT_SECRET')
