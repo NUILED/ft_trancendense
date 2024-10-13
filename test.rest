@@ -11,8 +11,6 @@ Content-Type: application/json
 }
 
 
-
-
 ##############
 ##############
 ##############
@@ -21,12 +19,11 @@ Content-Type: application/json
 ##############
 ##############
 ##############
-
 
 
 POST http://127.0.0.1:8000/api/oauth
 Content-Type: application/json
 
 {
-  "platform": "42"
+  "platform": "github"
 }

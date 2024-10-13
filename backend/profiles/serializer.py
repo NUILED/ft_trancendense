@@ -62,34 +62,41 @@ class SocialAuthontication(serializers.Serializer):
         platform = data['platform']
         headers = {'Authorization':f'Bearer {access_token}'}
         if platform == "github":
-            response = requests.get('https://api.github.com/user/emails',headers=headers,timeout=10000)
-            if response.status_code != 200:
-                raise AuthenticationFailed('invalid access token')
+            response = requests.get('https://api.github.com/user/emails',headers=headers, timeout=10000)
+            response.raise_for_status()
             res = response.json()
-            for email in res:
-                if email['primary'] == True:
-                    email = email['email']
+            email = None
+            for fileds in res:
+                if fileds['primary'] == True:
+                    email = fileds['email']
                     break
             if email is None:
-                raise AuthenticationFailed('email is required')
+                raise serializers.ValidationError('email is required')
+            user , created = User_profile.objects.get_or_create(email=email)
+            if user is not None:
+                return user.email
+            elif created: 
+                userinfo = requests.get('https://api.github.com/user',headers=headers, timeout=10000)
+                userinfo.raise_for_status()
+                created.user.username = userinfo.json()['login']
+                created.user.first_name = userinfo.json()['name'].split(' ')[0]
+                created.user.last_name = userinfo.json()['name'].split(' ')[1]
+                created.user.avatar = userinfo.json()['avatar_url']
+                created.user.save()
+                return created.user.email
         elif platform == "gmail":
-            response = requests.get('https://www.googleapis.com/oauth2/v1/userinfo',headers=headers,timeout=10000)
-            if response.status_code != 200:
-                raise AuthenticationFailed('invalid access token')
+            response = requests.get('https://www.googleapis.com/oauth2/v1/userinfo',headers=headers, timeout=10000)
+            response.raise_for_status()
             res = response.json()
             email = res['email']
             if email is None:
-                raise AuthenticationFailed('email is required')
+                raise serializers.ValidationError('email is required')
         elif platform == "42":
-            response = requests.get('https://api.intra.42.fr/v2/me',headers=headers,timeout=10000)
-            if response.status_code != 200:
-                raise AuthenticationFailed('invalid access token')
+            response = requests.get('https://api.intra.42.fr/v2/me',headers=headers, timeout=10000)
+            response.raise_for_status()
             res = response.json()
             email = res['email']
-            if email is None:
-                raise AuthenticationFailed('email is required')
-        user = User_profile.objects.filter(email=email).first()
-        if not user:
-            User_profile.objects.create(email=email,username=email.split('@')[0],password="123456")
-            user = User_profile.objects.filter(email=email).first()
-        return user
+        if email is None:
+            raise serializers.ValidationError('email is required')
+        return res
+

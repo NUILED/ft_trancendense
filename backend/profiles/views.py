@@ -283,8 +283,7 @@ class SocialAuthverify(APIView):
                     }
                 platform = '42'
             response = requests.post(url, data=data, headers=headers, timeout=10000)
-            if response.status_code != 200:
-                raise AuthenticationFailed('invalid access token')
+            response.raise_for_status()
             access_token = response.json()['access_token']
             data = {
                 'access_token': access_token,
@@ -293,7 +292,15 @@ class SocialAuthverify(APIView):
             serializer = self.serializer_class(data=data)
             if serializer.is_valid(raise_exception=True):
                 email = serializer.validated_data
-            return Response({'info':'successfull'}, status=200)       
+                user  = User_profile.objects.get(email=email)
+                if user :
+                    token = user.token()
+                    return Response({
+                        'access': str(token.access_token),
+                        'refresh': str(token),
+                    })
+                else:
+                    return Response({'info':'user not found'},status=400)
         except requests.exceptions.RequestException as e:
             return Response({'info':str(e)}, status=400)
             

@@ -25,6 +25,7 @@ class User_profile(AbstractBaseUser,PermissionsMixin):
     wins = models.IntegerField(default=0)
     losses = models.IntegerField(default=0)
     draws = models.IntegerField(default=0)
+    matches_played = models.IntegerField(default=0)
 
     USERNAME_FIELD = 'email'
     objects = UserManager()

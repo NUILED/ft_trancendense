@@ -1,15 +1,15 @@
 services:
-  web:
-    restart: always
-    depends_on:
-      - db
-    build: ./backend
-    ports:
-      - "8080:8080"
-    env_file:
-      - .env
-    networks:
-      - backend
+  # web:
+  #   restart: always
+  #   depends_on:
+  #     - db
+  #   build: ./backend
+  #   ports:
+  #     - "8080:8080"
+  #   env_file:
+  #     - .env
+  #   networks:
+  #     - backend
   db:
     build: ./db
     container_name: postgres
