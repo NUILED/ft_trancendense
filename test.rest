@@ -2,12 +2,12 @@
 # # Content-Type: application/json
 # # {}
 
-POST http://127.0.0.1:8000/api/login
+GET http://127.0.0.1:8000/api/user_info
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzI4ODE0MzQ2LCJpYXQiOjE3Mjg4MTQwNDYsImp0aSI6ImM1NTA2NjljOWEzMzRkMTliNDU3MmJmZmY5MmFjNzFhIiwidXNlcl9pZCI6OH0.RSPE9kuY2SbGeH0Pzr0sK_91P1rvcXutA6DcZcCncZ8
 
 {
-  "email":"dijad7190@esterace.com",
-  "password":"aoutifra1"
+
 }
 
 
@@ -21,9 +21,13 @@ Content-Type: application/json
 ##############
 
 
-POST http://127.0.0.1:8000/api/oauth
+POST http://127.0.0.1:8000/api/signup
 Content-Type: application/json
 
 {
-  "platform": "github"
+  "username":"",
+  "email":"sifi6s0ss27@gmail.com",
+  "password":"aoutifra1",
+  "first_name":"dijad",
+  "last_name":"dijad"
 }

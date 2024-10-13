@@ -59,60 +59,8 @@ class Sign_upView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-class CallBack(APIView):
-    def get(self,request):
-        try:
-            code = request.GET.get('code')
-            token = self.get_access_token(code)
-            info = self.user_info(token)
-            email = info['email']
-            if email:
-                user = User_profile.objects.filter(email=email).first()
-                if user:
-                    token = user.token()
-                    return Response ({
-                        'access': str(token.access_token),
-                        'refresh': str(token),
-                    })
-            if not user:
-                user = {
-                    'email': info['email'],
-                    'password': info['login'],
-                    'first_name': info['first_name'],
-                    'last_name': info['last_name'] ,
-                    'avatar': info['image']['versions']['large']
-                    }
-                serialaizer = UserSerializer(data=user)
-                serialaizer.is_valid(raise_exception=False)
-                serialaizer.save()
-                user = User_profile.objects.filter(email=email).first()
-                user.is_active = True
-                user.save()
-                token = user.token()
-                return {
-                    'access': str(token.access_token),
-                    'refresh': str(token),
-                }
-        except :
-            return Response({'messege':"invalid code"})
-
-    def get_access_token(self,code):
-        api_url = settings.API_URL
-        settings.DATA['code'] = code
-        data = settings.DATA
-        response = requests.post(api_url, data=data)
-        return response.json()['access_token']
-    
-    def user_info(self,token):
-        api_url = settings.API_URL_INFO
-        DATA_HEADER = {
-            'Authorization': 'Bearer ' + token
-        }
-        data = DATA_HEADER
-        response = requests.get(api_url, headers=data)
-        return response.json()
-
 class Update_user_info(APIView):
+    permission_classes = [IsAuthenticated]
     def put(self,request):
         try:
             infos = request.data
@@ -136,27 +84,14 @@ class Update_user_info(APIView):
 
 class Get_user_info(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
     def get(self,request):
         try:
             user = request.user
-            serialized_user = UserSerializer(user.data)
-            serialized_user.is_valid()
+            serialized_user = self.serializer_class(user)
             return Response(serialized_user.data)
-        except:
-            return Response({'info':'user not found'})
-
-class Delete_user(APIView):
-    def delete(self,request):
-        try:
-            email = request.data['email']
-            user = User_profile.objects.filter(email=email).first()
-            if user:
-                user.delete()
-                return Response({'info':'Deleted'})
-            else:
-                return Response({'info':'user not found'})
-        except:
-            return Response({'info':'user not found'})
+        except Exception as e:
+            return Response({'info':str(e)},status=400)
 
 class LogoutView(APIView):
     # here we just get the refresh token directly from the header
@@ -203,6 +138,7 @@ class Control2Fa(APIView):
             return Response({'info':'user not found'},status=400)
         
 class Signin2fa(APIView):
+    permission_classes = [AllowAny]
     def post(self,request):
         try:
             email = request.data['email']
@@ -234,7 +170,7 @@ class SocialAuth(APIView):
             elif platform == 'gmail':
                 client_id = settings.G_CLIENT_ID
                 redirect_uri = settings.G_REDIRECT_URI
-                url = f'https://accounts.google.com/o/oauth2/auth?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&scope=email'
+                url = f'https://accounts.google.com/o/oauth2/auth?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&scope=openid email profile'
             elif platform == "42":
                 client_id = settings.CLIENT_ID
                 redirect_uri = settings.INTRA_REDIRECT_URI
@@ -292,7 +228,7 @@ class SocialAuthverify(APIView):
             serializer = self.serializer_class(data=data)
             if serializer.is_valid(raise_exception=True):
                 email = serializer.validated_data
-                user  = User_profile.objects.get(email=email)
+                user  = User_profile.objects.filter(email=email).first()
                 if user :
                     token = user.token()
                     return Response({

@@ -25,7 +25,7 @@ class User_Register(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User_profile
-        fields = ['id','email','password','first_name','last_name','avatar','bio']
+        fields = ('__all__')
         extra_kwargs = {
             'password':{'write_only':True}
         }
@@ -73,22 +73,28 @@ class SocialAuthontication(serializers.Serializer):
             if email is None:
                 raise serializers.ValidationError('email is required')
             user , created = User_profile.objects.get_or_create(email=email)
-            if user is not None:
-                return user.email
-            elif created: 
+            if created:
                 userinfo = requests.get('https://api.github.com/user',headers=headers, timeout=10000)
                 userinfo.raise_for_status()
-                created.user.username = userinfo.json()['login']
-                created.user.first_name = userinfo.json()['name'].split(' ')[0]
-                created.user.last_name = userinfo.json()['name'].split(' ')[1]
-                created.user.avatar = userinfo.json()['avatar_url']
-                created.user.save()
-                return created.user.email
+                user.username = userinfo.json()['login']
+                user.first_name = userinfo.json()['name'].split(' ')[0]
+                user.last_name = userinfo.json()['name'].split(' ')[1]
+                user.avatar = userinfo.json()['avatar_url']
+                user.save()
+            return user.email
         elif platform == "gmail":
-            response = requests.get('https://www.googleapis.com/oauth2/v1/userinfo',headers=headers, timeout=10000)
+            response = requests.get('https://www.googleapis.com/oauth2/v3/userinfo',headers=headers, timeout=10000)
             response.raise_for_status()
             res = response.json()
-            email = res['email']
+            email = response.json()['email']
+            user , created = User_profile.objects.get_or_create(email=email)
+            if created:
+                user.username = res['name']
+                user.first_name = res['given_name']
+                user.last_name = res['given_name']
+                user.avatar = res['picture']
+                user.save()
+            return user.email
             if email is None:
                 raise serializers.ValidationError('email is required')
         elif platform == "42":
@@ -96,7 +102,12 @@ class SocialAuthontication(serializers.Serializer):
             response.raise_for_status()
             res = response.json()
             email = res['email']
-        if email is None:
-            raise serializers.ValidationError('email is required')
-        return res
+            user , created = User_profile.objects.get_or_create(email=email)
+            if created:
+                user.username = res['login']
+                user.first_name = res['first_name']
+                user.last_name = res['last_name']
+                user.save()
+            return user.email
+        raise serializers.ValidationError('Failed to login with given credentials')
 
