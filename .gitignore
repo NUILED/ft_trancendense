@@ -1,2 +1,6 @@
 env
 test.rest
+backend/profiles/__pycache__/*
+backend/__pycache__/*
+backend/profiles/__pycache__/
+backend/__pycache__/
