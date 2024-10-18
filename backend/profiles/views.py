@@ -32,9 +32,9 @@ class LoginView(APIView):
                 return Response({
                     'access': str(token.access_token),
                     'refresh': str(token),
-                })
+                },status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({'error': str(e)}, status=500)
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class Sign_upView(APIView):
     permission_classes = [AllowAny]  # Allow anyone, even unauthenticated users
@@ -61,26 +61,22 @@ class Sign_upView(APIView):
 
 class Update_user_info(APIView):
     permission_classes = [IsAuthenticated]
-    def put(self,request):
+    serializer_class = UserSerializer
+    def put(self, request):
         try:
             infos = request.data
-            email = infos['email']
-            password = infos['password']
-            user = User_profile.objects.filter(email=email).first()
-            if not user.check_password(raw_password=password):
-                raise AuthenticationFailed('invalid credential')
-            elif user:
-                user.email = infos['email']
-                user.first_name = infos['first_name']
-                user.last_name = infos['last_name']
-                user.avatar = infos['avatar']
-                user.bio = infos['bio']
-                user.save()
-                return Response({"success"})
-            else:
-                return Response({"user dose not exsiste"})
+            user = request.user
+            if infos["email"] and infos["email"] != user.email:
+                if User_profile.objects.filter(email=infos["email"]).exists():
+                    raise AuthenticationFailed('Email already exists')
+            if infos["username"] and infos["username"] != user.username:
+                if User_profile.objects.filter(username=infos["username"]).exists():
+                    raise AuthenticationFailed('Username already exists')
+            serializer = self.serializer_class().update(user, infos)
+            serializer.save()
+            return Response({"message": "User updated successfully!"},status=status.HTTP_200_OK)
         except Exception as e:
-            return Response({'error': str(e)}, status=500)
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 class Get_user_info(APIView):
     permission_classes = [IsAuthenticated]
@@ -104,8 +100,6 @@ class LogoutView(APIView):
             return Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
         except (TokenError, InvalidToken):
             return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
-
-    #django set password view
 
 class Control2Fa(APIView):
     permission_classes = [IsAuthenticated]

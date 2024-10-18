@@ -14,10 +14,10 @@ class User_Register(serializers.ModelSerializer):
         fields = ['email','first_name','last_name','username' ,'password']
 
     def create(self, validated_data):
-        password = validated_data.pop('password',None)
+        password = validated_data.pop('password')
         user = User_profile.objects.create_user(**validated_data)
         user.set_password(password)
-        if not user.username:
+        if not user.username or user.username == '':
             user.username = user.email.split('@')[0]
         user.save()
         return user
@@ -29,14 +29,13 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password':{'write_only':True}
         }
-
-    def create(self,validated_data):
+    def update(self, instance, validated_data):
         password = validated_data.pop('password',None)
-        instance = self.Meta.model(**validated_data)
+        user = super().update(instance,validated_data)
         if password:
-            instance.set_password(password)
-        instance.save()
-        return instance
+            user.set_password(password)
+            user.save()
+        return user
 
 class LoginUserSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=55, min_length=8, allow_blank=False)
@@ -47,6 +46,7 @@ class LoginUserSerializer(serializers.Serializer):
         password = attrs.get('password')
         try:
             user = User_profile.objects.get(email=email)
+            print(user)
         except:
             raise AuthenticationFailed("invalid credentials try again")
         

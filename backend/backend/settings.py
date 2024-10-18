@@ -90,15 +90,10 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('POSTGRES_DB'),
-        'USER': config('POSTGRES_USER'),
-        'PASSWORD': config('POSTGRES_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT', default='5432'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',  # BASE_DIR typically points to your project root directory
     }
 }
-
 AUTH_USER_MODEL = 'profiles.User_profile'
 
 # Password validation
@@ -152,7 +147,7 @@ CLIENT_ID = 'u-s4t2ud-84fdb475704e23d6d0208d0eb1219bdc3b8b724d1159042bff2a0f825c
 CLIENT_SECRET = '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'
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=config('ACCESS_TOKEN_LIFETIME', default=5, cast=int)),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=config('ACCESS_TOKEN_LIFETIME', default=50, cast=int)),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": config('ROTATE_REFRESH_TOKENS', default=True, cast=bool),
     "BLACKLIST_AFTER_ROTATION": config('BLACKLIST_AFTER_ROTATION', default=True, cast=bool),
