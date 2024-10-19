@@ -8,27 +8,27 @@ import requests
 class User_Register(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=55, min_length=8, allow_blank=False)
     password = serializers.CharField(max_length=68,min_length=6,write_only=True)
-
+    avatar = serializers.ImageField(allow_empty_file=True, required=False) 
     class Meta:
         model = User_profile
-        fields = ['email','first_name','last_name','username' ,'password']
-
+        fields = ['email','first_name','last_name','username' ,'password','avatar']
+    
     def create(self, validated_data):
         password = validated_data.pop('password')
         user = User_profile.objects.create_user(**validated_data)
         user.set_password(password)
+        user.avatar = validated_data.get('avatar')
         if not user.username or user.username == '':
             user.username = user.email.split('@')[0]
         user.save()
         return user
 
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
     class Meta:
         model = User_profile
         fields = ('__all__')
-        extra_kwargs = {
-            'password':{'write_only':True}
-        }
+    
     def update(self, instance, validated_data):
         password = validated_data.pop('password',None)
         user = super().update(instance,validated_data)

@@ -11,12 +11,10 @@ import requests
 import json
 from django.core.mail import send_mail 
 from rest_framework.permissions import IsAuthenticated ,AllowAny
-from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 import pyotp
-#import redirect from django.shortcuts
 from django.shortcuts import redirect
-
 
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow anyone, even unauthenticated users
@@ -42,6 +40,7 @@ class Sign_upView(APIView):
         try:
             email = request.data.get('email', None)
             username = request.data.get('username', None)
+            print('dara->',request.data)
             if User_profile.objects.filter(email=email).exists():
                 raise AuthenticationFailed('Email already exists')
             if User_profile.objects.filter(username=username).exists():
@@ -55,7 +54,7 @@ class Sign_upView(APIView):
                 )
         except Exception as e:
                 return Response(
-                    {'detail': str(e)},
+                    {str(e)},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
@@ -98,7 +97,7 @@ class LogoutView(APIView):
             refresh_token = RefreshToken(token)
             refresh_token.blacklist()
             return Response({"detail": "Successfully logged out."}, status=status.HTTP_200_OK)
-        except (TokenError, InvalidToken):
+        except TokenError:
             return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
 
 class Control2Fa(APIView):
@@ -233,4 +232,3 @@ class SocialAuthverify(APIView):
                     return Response({'info':'user not found'},status=400)
         except requests.exceptions.RequestException as e:
             return Response({'info':str(e)}, status=400)
-            
