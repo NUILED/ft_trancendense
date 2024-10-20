@@ -7,14 +7,27 @@ from .models import User_profile
 import jwt 
 from django.core.serializers import deserialize
 from django.conf import settings
-import requests
 import json
 from django.core.mail import send_mail 
 from rest_framework.permissions import IsAuthenticated ,AllowAny
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 import pyotp
 from django.shortcuts import redirect
+
+class VerifyToken(APIView):
+    permission_classes = [AllowAny]
+    def post(self,request):
+        try:
+            token = request.data['token']
+            Access_token = AccessToken(token)
+            id = Access_token['user_id']
+            user = User_profile.objects.filter(id=id).exists()
+            if user:
+                return Response({'info':'Token is Valid'}, status=200)
+            return Response({'error':'user not found'}, status=200)
+        except Exception as e:
+            return Response({'info':str(e)},status=400)
 
 class LoginView(APIView):
     permission_classes = [AllowAny]  # Allow anyone, even unauthenticated users
